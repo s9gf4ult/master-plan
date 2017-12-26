@@ -1,23 +1,63 @@
 root issues ;
 
 issues {
-  title "Make more usable tool"
-} internals * usability ;
+  description "Make more usable tool"
+} internals -> (bugs * usability) ;
+
+bugs wrongTrust ;
+
+wrongTrust {
+  description "Trust is calculated wrong when for this formula: '(a + b) * (a * b)'. Simplifier must can to see, that trust must be just as for '(a * b)' but it does not."
+  trust 50%
+} ;
 
 internals {
-  title "Improve internals of the project"
-} parser * datatypes ;
+  description "Improve internals of the project"
+} parser * (datatypes -> (simplification * weightedSeq))  ;
 
 parser {
-  title "Make clean extendable parser"
+  description "Make clean extendable parser"
 } yaml + inhouseParser ;
 
 yaml {
-  title "Replace parser with yaml"
+  description "Replace parser with yaml"
   trust 80%
 };
 
 inhouseParser {
-  title "Simplify inhouse parser, remove business logic from parser"
+  description "Simplify inhouse parser, remove business logic from parser"
   trust 50%
 };
+
+datatypes {
+  description "Separate algebra from projects. Get rid of 'Annotated' constructor (and lots of 'undefined'). And stuff"
+  trust 75%
+};
+
+simplification {
+  description "Improve simplification: simplify not just expressions but whole project. May be unusable."
+  trust 45%
+};
+
+weightedSeq {
+  description "Generalize product and sequence to weighted sequence, where '[0]->' is just a synonym to '*' and '[1]->' is just a synonym to '->'. Useful when you are not sure if some subproject realy hard depends from another (they may be kind of possibly independent)."
+  trust 90%
+};
+
+usability input * output * processing ;
+
+input pluggableInputs;
+
+pluggableInputs {
+  description "Parsing org files as well as yaml would be just awesome."
+} ;
+
+output pluggableRenderers * taskList ;
+
+pluggableRenderers {
+  description "Render graph to picture, html page (with dynamic folding), and other outputs."
+} ;
+
+taskList {
+  description "Print list of tasks which may be executed (not depend from any other task) selected and sorted by arbitrary condition"
+} ;
