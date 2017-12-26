@@ -1,0 +1,23 @@
+root issues ;
+
+issues {
+  title "Make more usable tool"
+} internals * usability ;
+
+internals {
+  title "Improve internals of the project"
+} parser * datatypes ;
+
+parser {
+  title "Make clean extendable parser"
+} yaml + inhouseParser ;
+
+yaml {
+  title "Replace parser with yaml"
+  trust 80%
+};
+
+inhouseParser {
+  title "Simplify inhouse parser, remove business logic from parser"
+  trust 50%
+};
