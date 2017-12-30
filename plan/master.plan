@@ -7,13 +7,22 @@ issues {
 bugs wrongTrust ;
 
 wrongTrust {
-  description "Trust is calculated wrong when for this formula: '(a + b) * (a * b)'. Simplifier must can to see, that trust must be just as for '(a * b)' but it does not."
-  trust 50%
+  description "Trust is calculated wrong for this formula: '(a + b) * (a * b)'. Simplifier must can see, that trust must be just as for '(a * b)' but it does not. Potentially can be solved as the trust of sequential execution of precalculated plan"
+} (taskList -> trustOfPlan) + (datatypes -> trustByAlgebra) ;
+
+trustOfPlan {
+  description "Calculate trust by calculating the trust of whole plan execution for each subproject"
+  trust 80%
+} ;
+
+trustByAlgebra {
+  description "Calculate trust by reducing algebraic expressions to minimal formula"
+  trust 40%
 } ;
 
 internals {
   description "Improve internals of the project"
-} parser * (datatypes -> (simplification * weightedSeq))  ;
+} parser * (datatypes -> (simplification * weightedSeq)) ;
 
 parser {
   description "Make clean extendable parser"
@@ -60,4 +69,53 @@ pluggableRenderers {
 
 taskList {
   description "Print list of tasks which may be executed (not depend from any other task) selected and sorted by arbitrary condition"
+} ;
+
+processing nesting * multipleRating * defaultRatings * allowCycles * removeDeadPlanCode * resourceManagement * (scheduling -> googleCalendarIntegration) * orgModeIntegration ;
+
+nesting modules * localVariables ;
+
+modules {
+  description "Make Haskell-like module system to import project trees one from another and use some subprojects as dependencies"
+  trust 80%
+} ;
+
+localVariables {
+  description "Allow local variables used inside of formula (not visible from other projects). Just for convenience of writing of complex nested projects"
+  trust 70%
+} ;
+
+defaultRatings {
+  description "Get from parameters default values (if not presented in project properties) for trust, cost and more"
+} ;
+
+multipleRating {
+  description "Multiple numbers for such things like 'trust' and 'price'. Result must be some kind of stats (min, max, avg)"
+  trust 80%
+} ;
+
+allowCycles {
+  description "Allow cycles between projects"
+} weightedSeq -> flexibleTasksList ;
+
+flexibleTasksList {
+  description "Calculate tasks list as some kind of weighted graph decomposition on the line"
+  trust 15%
+} ;
+
+scheduling taskScheduling -> (stablePlans * cycledTasks) ;
+
+taskScheduling {
+  description "Add parameter 'schedule' and consider it on plan generation"
+  trust 75%
+} ;
+
+stablePlans {
+  description "Solve the potential problem of instable plans which change too fast when project tree changes slightly"
+  trust 10%
+} ;
+
+removeDeadPlanCode {
+  description "Solve the problem of removing the dead projects (executed) from initial files"
+  trust 80%
 } ;
