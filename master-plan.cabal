@@ -67,7 +67,8 @@ library
                        , MasterPlan.Backend.Graph
                        , MasterPlan.Backend.Identity
                        , MasterPlan.Data
-                       , MasterPlan.Input.Types
+                       , MasterPlan.Input.Expression
+                       , MasterPlan.Input.Json
                        , MasterPlan.Internal.Debug
                        , MasterPlan.Internal.TH
                        -- , MasterPlan.Parser

@@ -23,8 +23,6 @@ import           Text.Megaparsec.Char
 import qualified Text.Megaparsec.Char.Lexer as L
 import           Text.Megaparsec.Expr
 
-type Parser = Parsec Void T.Text
-
 -- |Space consumer
 sc ∷ Parser ()
 sc = L.space space1 (L.skipLineComment "//") $
@@ -33,12 +31,6 @@ sc = L.space space1 (L.skipLineComment "//") $
 lexeme ∷ Parser a → Parser a
 lexeme = L.lexeme sc
 
-symbol ∷ T.Text → Parser T.Text
-symbol = L.symbol sc
-
--- | 'parens' parses something between parenthesis.
-parens ∷ Parser a → Parser a
-parens = between (symbol "(") (symbol ")")
 
 -- |list of reserved words
 rws ∷ [String]
