@@ -66,19 +66,6 @@ percentage = do n <- L.float <?> "percentage value"
 nonNegativeNumber :: Parser Float
 nonNegativeNumber = L.float
 
--- |Parses the part of right-hand-side after the optional properties
---  (literal string title or properties between curly brackets)
-expression ∷ ProjectProperties -> Parser (Project ProjectKey)
-expression props =
-    simplify <$> makeExprParser term table <?> "expression"
-  where
-    term =  parens (expression defaultProjectProps) <|> (Annotated <$> projectKey)
-    table = [[binary "*" (combineWith Product)]
-            ,[binary "->" (combineWith Sequence)]
-            ,[binary "+" (combineWith Sum)]]
-    binary  op f = InfixL (f <$ symbol op)
-
-    combineWith c p1 p2 = c props $ p1 NE.<| [p2]
 
 -- |Parses the entire right-hand-side of definitions
 binding :: ProjectKey -> Parser (Project ProjectKey)

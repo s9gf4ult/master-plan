@@ -44,20 +44,33 @@ library
     hs-source-dirs:      src
     default-language:    Haskell2010
     ghc-options:         -Wall
-    default-extensions:  UnicodeSyntax
+    default-extensions:  GeneralizedNewtypeDeriving
+                       , OverloadedStrings
+                       , TemplateHaskell
+                       , UnicodeSyntax
     build-depends:       base >= 4.5 && < 5
+                       , aeson
                        , diagrams
                        , diagrams-lib
                        , diagrams-rasterific
+                       , hashable
+                       , inflections
+                       , lens
                        , megaparsec >= 6.0.0
                        , mtl
-                       , text
+                       , scientific
                        , syb
-    exposed-modules:     MasterPlan.Data
-                       , MasterPlan.Parser
+                       , text
+                       , unordered-containers
+                       , yaml
+    exposed-modules:     MasterPlan.Algebra
                        , MasterPlan.Backend.Graph
                        , MasterPlan.Backend.Identity
+                       , MasterPlan.Data
+                       , MasterPlan.Input.Types
                        , MasterPlan.Internal.Debug
+                       , MasterPlan.Internal.TH
+                       -- , MasterPlan.Parser
 
 test-suite spec
   type:             exitcode-stdio-1.0
