@@ -17,11 +17,11 @@ import MasterPlan.Internal.TH
 
 newtype Cost = Cost
   { unCost :: Scientific
-  } deriving (Eq, FromJSON)
+  } deriving (Eq, Show, FromJSON)
 
 newtype Trust = Trust
   { unTrust :: Scientific
-  } deriving (Eq, FromJSON)
+  } deriving (Eq, Show, FromJSON)
 
 data Project = Project
   { _pTitle       :: Maybe Text
@@ -31,7 +31,7 @@ data Project = Project
   , _pCost        :: Maybe Cost
   , _pTrust       :: Maybe Trust
   , _pExpression  :: Maybe Expression
-  } deriving (Eq)
+  } deriving (Eq, Show)
 
 makeLenses ''Project
 
@@ -42,7 +42,7 @@ data Module = Module
   , _mImports  :: Maybe [ModuleImport]
   , _mRoot     :: Maybe ProjectName
   , _mProjects :: HashMap ProjectName Project
-  } deriving (Eq)
+  } deriving (Eq, Show)
 
 makeLenses ''Module
 

@@ -6,4 +6,4 @@ data Algebra a
   | Product [Algebra a]
   | Sequence [Algebra a]
   | Atom a
-  deriving (Eq, Ord)
+  deriving (Eq, Show, Ord)

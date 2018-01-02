@@ -27,7 +27,7 @@ type Megaparsec = Parsec Void T.Text
 
 newtype ProjectName = ProjectName
   { unProjectName :: NonEmpty Text
-  } deriving (Eq, Hashable)
+  } deriving (Eq, Show, Hashable)
 
 instance FromJSON ProjectName where
   parseJSON = withText "Project name" parseProjectName
@@ -43,7 +43,7 @@ parseProjectName = eitherJsonParser . runParser projectName ""
 
 newtype ModuleName = ModuleName
   { unModuleName :: NonEmpty Text
-  } deriving (Eq)
+  } deriving (Eq, Show)
 
 instance FromJSON ModuleName where
   parseJSON = withText "Dot separated module name" parseModuleName
@@ -55,17 +55,18 @@ parseModuleName :: Text -> Parser ModuleName
 parseModuleName = eitherJsonParser . runParser moduleName ""
 
 data Expression = Expression (Algebra ProjectName)
-  deriving (Eq)
+  deriving (Eq, Show)
 
 instance FromJSON Expression where
   parseJSON = withText "Project expression" go
     where
-      go = (error "FIXME: parse expression")
+      go t = fmap Expression $ eitherJsonParser
+        $ runParser (expression projectName) "" t
 
 data ModuleImport = ModuleImport
   { _miModule  :: ModuleName
   , _miSynonym :: Maybe ModuleName
-  } deriving (Eq)
+  } deriving (Eq, Show)
 
 instance FromJSON ModuleImport where
   parseJSON = withText "Module import" go
