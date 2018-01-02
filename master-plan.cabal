@@ -50,7 +50,7 @@ library
                        , TemplateHaskell
                        , UnicodeSyntax
     build-depends:       base >= 4.5 && < 5
-                       , aeson
+                       , aeson >= 1.1.0.0
                        , diagrams
                        , diagrams-lib
                        , diagrams-rasterific
@@ -60,6 +60,7 @@ library
                        , megaparsec >= 6.0.0
                        , mtl
                        , scientific
+                       , semigroups
                        , syb
                        , text
                        , unordered-containers

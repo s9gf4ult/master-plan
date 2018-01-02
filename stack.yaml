@@ -41,12 +41,14 @@ packages:
 # (e.g., acme-missiles-0.3)
 extra-deps:
   - QuickCheck-2.10.0.1
+  - aeson-1.2.3.0
   - base-compat-0.9.3
   - hashable-1.2.6.1
   - inflections-0.4.0.0
   - megaparsec-6.0.2
   - parser-combinators-0.2.1
   - quickcheck-instances-0.3.16
+  - th-abstraction-0.2.6.0
   - tagged-0.8.5
   - transformers-compat-0.5.1.4
 
