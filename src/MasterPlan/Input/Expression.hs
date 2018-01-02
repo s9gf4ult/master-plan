@@ -24,7 +24,6 @@ import qualified Text.Megaparsec.Char.Lexer as Lexer
 
 type Megaparsec = Parsec Void T.Text
 
-
 newtype ProjectName = ProjectName
   { unProjectName :: NonEmpty Text
   } deriving (Eq, Show, Hashable)

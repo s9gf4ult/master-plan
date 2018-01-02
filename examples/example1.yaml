@@ -7,5 +7,6 @@ projects:
     expression: x + p
   x:
     title: build technology
-    description: can we build the technology ourselves
+    description: >
+      can we build the technology ourselves
     expression: h * b

@@ -1,0 +1,9 @@
+module: simple
+root: root
+projects:
+  root:
+    expr: a + b
+  a:
+    title: A project
+  b:
+    title: B project
