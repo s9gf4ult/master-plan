@@ -1,0 +1,11 @@
+root: root
+projects:
+  root:
+    title: business
+    description: can we run a successful business
+    owner: CEO
+    expression: x + p
+  x:
+    title: build technology
+    description: can we build the technology ourselves
+    expression: h * b

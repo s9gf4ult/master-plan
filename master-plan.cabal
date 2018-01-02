@@ -29,16 +29,16 @@ source-repository head
   type:     git
   location: git://github.com/rodrigosetti/master-plan.git
 
-executable master-plan
-  hs-source-dirs:      app
-  main-is:             Main.hs
-  default-language:    Haskell2010
-  ghc-options:         -Wall
-  default-extensions:  UnicodeSyntax
-  build-depends:       base >= 4.5 && < 5
-                     , master-plan
-                     , optparse-applicative
-                     , text
+-- executable master-plan
+--   hs-source-dirs:      app
+--   main-is:             Main.hs
+--   default-language:    Haskell2010
+--   ghc-options:         -Wall
+--   default-extensions:  UnicodeSyntax
+--   build-depends:       base >= 4.5 && < 5
+--                      , master-plan
+--                      , optparse-applicative
+--                      , text
 
 library
     hs-source-dirs:      src
