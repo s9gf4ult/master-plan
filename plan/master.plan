@@ -30,11 +30,12 @@ internals {
 
 parser {
   description "Make clean extendable parser"
-} yaml + inhouseParser ;
+} (yaml -> multipleYamlProjs) + inhouseParser ;
 
 yaml {
   description "Replace parser with yaml"
   trust 80%
+  progress 80%
 };
 
 inhouseParser {
