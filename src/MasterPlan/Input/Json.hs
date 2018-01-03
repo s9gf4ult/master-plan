@@ -1,18 +1,12 @@
 module MasterPlan.Input.Json where
 
 import Control.Lens
-import Control.Monad
 import Data.Aeson
 import Data.Aeson.TH
-import Data.Aeson.Types
-import Data.Char
 import Data.HashMap.Strict
-import Data.Hashable
-import Data.List as L
 import Data.Scientific
 import Data.Text as T
 import Data.Yaml
-import MasterPlan.Algebra
 import MasterPlan.Input.Expression
 import MasterPlan.Internal.TH
 
@@ -36,7 +30,27 @@ data Project = Project
 
 makeLenses ''Project
 
-deriveFromJSON jsonOpts ''Project
+instance FromJSON Project where
+  parseJSON = withObject "Project" $ \o -> do
+    title <- o .:?  "title"
+    desc  <- o .:? "description" >>= \case
+      Nothing -> o .:? "desc"
+      a       -> return a
+    url   <- o .:? "url"
+    owner <- o .:? "owner"
+    cost  <- o .:? "cost"
+    trust <- o .:? "trust"
+    expr  <- o .:? "expression" >>= \case
+      Nothing -> o .:? "expr"
+      a       -> return a
+    return Project
+      { _pTitle       = title
+      , _pDescription = desc
+      , _pUrl         = url
+      , _pOwner       = owner
+      , _pCost        = cost
+      , _pTrust       = trust
+      , _pExpression  = expr }
 
 emptyProject :: Project
 emptyProject = Project
