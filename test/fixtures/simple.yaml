@@ -2,7 +2,7 @@ module: simple
 root: root
 projects:
   root:
-    expr: a + b
+    expression: a + b
   a:
     title: A project
   b:

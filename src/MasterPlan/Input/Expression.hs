@@ -11,6 +11,7 @@ import Data.Hashable
 import Data.List as L
 import Data.List.NonEmpty as NE
 import Data.Scientific
+import Data.String
 import Data.Text as T
 import Data.Void
 import GHC.Generics (Generic)
@@ -34,6 +35,11 @@ instance FromJSON ProjectName where
 instance FromJSONKey ProjectName where
   fromJSONKey = FromJSONKeyTextParser parseProjectName
 
+instance IsString ProjectName where
+  fromString s = case runParser projectName "" $ T.pack s of
+    Left e  -> error $ show e
+    Right a -> a
+
 projectName :: Megaparsec ProjectName
 projectName = ProjectName <$> dotedAlphaNum
 
@@ -46,6 +52,12 @@ newtype ModuleName = ModuleName
 
 instance FromJSON ModuleName where
   parseJSON = withText "Dot separated module name" parseModuleName
+
+-- | May throw exceptions. Use only in tests and similar stuff
+instance IsString ModuleName where
+  fromString s = case runParser moduleName "" $ T.pack s of
+    Left e  -> error $ show e
+    Right a -> a
 
 moduleName :: Megaparsec ModuleName
 moduleName = ModuleName <$> dotedAlphaNum
@@ -82,10 +94,12 @@ instance FromJSON ModuleImport where
 
 -- | Parses the part of right-hand-side after the optional properties
 --  (literal string title or properties between curly brackets)
-expression ∷ Megaparsec a -> Megaparsec (Algebra a)
+expression
+  :: Megaparsec a
+  -> Megaparsec (Algebra a)
 expression subexpr = makeExprParser term table <?> "expression"
   where
-    term =  parens (expression subexpr) <|> (Atom <$> subexpr)
+    term =  spaced $ parens (expression subexpr) <|> (Atom <$> subexpr)
     table = [[binary "*" (combineWith Product)]
             ,[binary "->" (combineWith Sequence)]
             ,[binary "+" (combineWith Sum)]]
@@ -104,9 +118,9 @@ eitherJsonParser = \case
   Left e  -> fail $ show e
   Right a -> return a
 
-symbol ∷ T.Text → Megaparsec T.Text
-symbol = Lexer.symbol Char.space
+-- symbol ∷ T.Text → Megaparsec T.Text
+-- symbol = Lexer.symbol Char.space
 
--- | 'parens' parses something between parenthesis.
-parens ∷ Megaparsec a → Megaparsec a
-parens = between (symbol "(") (symbol ")")
+-- -- | 'parens' parses something between parenthesis.
+-- parens ∷ Megaparsec a → Megaparsec a
+-- parens = between (symbol "(") (symbol ")")

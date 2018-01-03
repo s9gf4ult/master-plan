@@ -84,6 +84,7 @@ test-suite spec
   default-extensions:  GeneralizedNewtypeDeriving
                      , LambdaCase
                      , OverloadedStrings
+                     , RankNTypes
                      , TemplateHaskell
                      , UnicodeSyntax
   build-depends:    base >= 4.5 && < 5
@@ -92,6 +93,7 @@ test-suite spec
                   , hspec
                   , lens
                   , master-plan
+                  , megaparsec
                   , mtl
                   , quickcheck-instances
                   , random
