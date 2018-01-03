@@ -31,26 +31,31 @@ data Project = Project
 makeLenses ''Project
 
 instance FromJSON Project where
-  parseJSON = withObject "Project" $ \o -> do
-    title <- o .:?  "title"
-    desc  <- o .:? "description" >>= \case
-      Nothing -> o .:? "desc"
-      a       -> return a
-    url   <- o .:? "url"
-    owner <- o .:? "owner"
-    cost  <- o .:? "cost"
-    trust <- o .:? "trust"
-    expr  <- o .:? "expression" >>= \case
-      Nothing -> o .:? "expr"
-      a       -> return a
-    return Project
-      { _pTitle       = title
-      , _pDescription = desc
-      , _pUrl         = url
-      , _pOwner       = owner
-      , _pCost        = cost
-      , _pTrust       = trust
-      , _pExpression  = expr }
+  parseJSON v = case v of
+    Object o -> do
+      title <- o .:?  "title"
+      desc  <- o .:? "description" >>= \case
+        Nothing -> o .:? "desc"
+        a       -> return a
+      url   <- o .:? "url"
+      owner <- o .:? "owner"
+      cost  <- o .:? "cost"
+      trust <- o .:? "trust"
+      expr  <- o .:? "expression" >>= \case
+        Nothing -> o .:? "expr"
+        a       -> return a
+      return Project
+        { _pTitle       = title
+        , _pDescription = desc
+        , _pUrl         = url
+        , _pOwner       = owner
+        , _pCost        = cost
+        , _pTrust       = trust
+        , _pExpression  = expr }
+    String t -> do
+      expr <- parseExpression t
+      return $ emptyProject { _pExpression = Just expr }
+    _ -> fail "Project must be either string or object"
 
 emptyProject :: Project
 emptyProject = Project

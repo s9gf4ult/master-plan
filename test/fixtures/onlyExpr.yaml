@@ -1,0 +1,3 @@
+module: onlyExpr
+projects:
+  a: x + y

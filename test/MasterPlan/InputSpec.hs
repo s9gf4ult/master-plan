@@ -30,6 +30,47 @@ simpleProject = Module
     b = emptyProject
       & pTitle .~ Just "B project"
 
+shortenProject :: Module
+shortenProject = Module
+  { _mModule = "shorten"
+  , _mImports = Nothing
+  , _mRoot = Nothing
+  , _mProjects = H.fromList
+    [("a", a)]
+  }
+  where
+    a = emptyProject
+      & pTitle .~ Just "A project"
+      & pDescription .~ Just "A description"
+      & pExpression .~ Just e
+    e = Expression $ Sum [Atom "x", Atom "y"]
+
+onlyExprProject :: Module
+onlyExprProject = Module
+  { _mModule = "onlyExpr"
+  , _mImports = Nothing
+  , _mRoot = Nothing
+  , _mProjects = H.fromList
+    [("a", a)]
+  }
+  where
+    a = emptyProject
+      & pExpression .~ Just e
+    e = Expression $ Sum [Atom "x", Atom "y"]
+
+dotedProject :: Module
+dotedProject = Module
+  { _mModule = "dotedProjects"
+  , _mImports = Just [ModuleImport "simple" $ Just "s"]
+  , _mRoot = Nothing
+  , _mProjects = H.fromList
+    [("a", a)]
+  }
+  where
+    a = emptyProject
+      & pExpression .~ Just e
+    e = Expression $ Sequence [Atom "s.a", Atom "s.b"]
+
 lensyEq
   :: (Eq a, Show a)
   => Module
@@ -61,6 +102,15 @@ spec = do
       lensyEq m simpleProject $ mProjects . at "b"
       lensyEq m simpleProject $ mProjects . at "root"
       m @?= simpleProject
+    it "shorten keywords" $ do
+      m <- parseYamlModule "test/fixtures/shorten.yaml"
+      m @?= Right shortenProject
+    it "only expression" $ do
+      m <- parseYamlModule "test/fixtures/onlyExpr.yaml"
+      m @?= Right onlyExprProject
+    it "doted names in expression" $ do
+      m <- parseYamlModule "test/fixtures/dotedProjects.yaml"
+      m @?= Right dotedProject
   describe "Expressions parser" $ do
     it "atom parser" $ do
       parserSpec (Atom "a")

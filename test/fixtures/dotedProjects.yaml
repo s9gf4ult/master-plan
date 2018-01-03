@@ -1,0 +1,5 @@
+module: dotedProjects
+imports:
+  - simple as s
+projects:
+  a: s.a -> s.b

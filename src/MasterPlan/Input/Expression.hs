@@ -1,22 +1,13 @@
 module MasterPlan.Input.Expression where
 
-import Control.Lens
-import Control.Monad
 import Data.Aeson
-import Data.Aeson.TH
 import Data.Aeson.Types
-import Data.Char
-import Data.HashMap.Strict
 import Data.Hashable
-import Data.List as L
 import Data.List.NonEmpty as NE
-import Data.Scientific
 import Data.String
 import Data.Text as T
 import Data.Void
-import GHC.Generics (Generic)
 import MasterPlan.Algebra
-import MasterPlan.Internal.TH
 import Text.Megaparsec
 import Text.Megaparsec.Char
 import Text.Megaparsec.Expr
@@ -69,10 +60,12 @@ data Expression = Expression (Algebra ProjectName)
   deriving (Eq, Show)
 
 instance FromJSON Expression where
-  parseJSON = withText "Project expression" go
-    where
-      go t = fmap Expression $ eitherJsonParser
-        $ runParser (expression projectName) "" t
+  parseJSON = withText "Project expression" parseExpression
+
+parseExpression :: Text -> Parser Expression
+parseExpression t
+  = fmap Expression $ eitherJsonParser
+  $ runParser (expression projectName) "" t
 
 data ModuleImport = ModuleImport
   { _miModule  :: ModuleName
@@ -84,12 +77,12 @@ instance FromJSON ModuleImport where
     where
       go t = case T.splitOn " as " t of
         [m] -> do
-          moduleName <- parseModuleName m
-          return $ ModuleImport moduleName Nothing
+          mn <- parseModuleName m
+          return $ ModuleImport mn Nothing
         [m, syn] -> do
-          moduleName <- parseModuleName m
+          mn <- parseModuleName m
           synonym <- parseModuleName syn
-          return $ ModuleImport moduleName $ Just synonym
+          return $ ModuleImport mn $ Just synonym
         _ -> fail "Unexpected count of \"as\" keywords in import"
 
 dotedAlphaNum :: Megaparsec (NonEmpty Text)
@@ -97,7 +90,7 @@ dotedAlphaNum = do
   a <- sepBy1 (T.pack <$> some alphaNumChar) (char '.')
   case NE.nonEmpty a of
     Nothing -> fail "Name can not be empty"
-    Just a  -> return a
+    Just t  -> return t
 
 eitherJsonParser
   :: (ShowErrorComponent e, Ord t, ShowToken t)
