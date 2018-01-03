@@ -49,7 +49,7 @@ parserSpec
   -> Assertion
 parserSpec expected ts = for_ ts $ \t -> do
   let res = runParser (expression projectName) "" t
-  res @?= Right expected
+  assertEqual (T.unpack t) (Right expected) res
 
 spec :: Spec
 spec = do

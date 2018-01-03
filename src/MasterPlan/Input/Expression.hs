@@ -18,10 +18,10 @@ import GHC.Generics (Generic)
 import MasterPlan.Algebra
 import MasterPlan.Internal.TH
 import Text.Megaparsec
+import Text.Megaparsec.Char
 import Text.Megaparsec.Expr
 
-import qualified Text.Megaparsec.Char as Char
-import qualified Text.Megaparsec.Char.Lexer as Lexer
+import qualified Text.Megaparsec.Char.Lexer as Lex
 
 type Megaparsec = Parsec Void T.Text
 
@@ -92,23 +92,9 @@ instance FromJSON ModuleImport where
           return $ ModuleImport moduleName $ Just synonym
         _ -> fail "Unexpected count of \"as\" keywords in import"
 
--- | Parses the part of right-hand-side after the optional properties
---  (literal string title or properties between curly brackets)
-expression
-  :: Megaparsec a
-  -> Megaparsec (Algebra a)
-expression subexpr = makeExprParser term table <?> "expression"
-  where
-    term =  spaced $ parens (expression subexpr) <|> (Atom <$> subexpr)
-    table = [[binary "*" (combineWith Product)]
-            ,[binary "->" (combineWith Sequence)]
-            ,[binary "+" (combineWith Sum)]]
-    binary  op f = InfixL (f <$ symbol op)
-    combineWith c p1 p2 = c [p1, p2]
-
 dotedAlphaNum :: Megaparsec (NonEmpty Text)
 dotedAlphaNum = do
-  a <- sepBy1 (T.pack <$> some Char.alphaNumChar) (Char.char '.')
+  a <- sepBy1 (T.pack <$> some alphaNumChar) (char '.')
   case NE.nonEmpty a of
     Nothing -> fail "Name can not be empty"
     Just a  -> return a
@@ -118,9 +104,34 @@ eitherJsonParser = \case
   Left e  -> fail $ show e
   Right a -> return a
 
--- symbol ∷ T.Text → Megaparsec T.Text
--- symbol = Lexer.symbol Char.space
+-- | Parses the part of right-hand-side after the optional properties
+--  (literal string title or properties between curly brackets)
+expression
+  :: Megaparsec a
+  -> Megaparsec (Algebra a)
+expression subexpr =
+  spaced (makeExprParser term table <?> "expression")
+  where
+    term  = parens (expression subexpr) <|> (Atom <$> subexpr)
+    table = [[binary "*" (combineWith Product)]
+            ,[binary "->" (combineWith Sequence)]
+            ,[binary "+" (combineWith Sum)]]
+    binary  op f = InfixL (f <$ symbol op)
+    combineWith c p1 p2 = c [p1, p2]
 
--- -- | 'parens' parses something between parenthesis.
--- parens ∷ Megaparsec a → Megaparsec a
--- parens = between (symbol "(") (symbol ")")
+-- | Consume leading spaces (if exists) then given parser, then
+-- trailing spaces
+spaced :: Megaparsec a -> Megaparsec a
+spaced p = do
+  space -- may consume nothing
+  lexeme p
+
+lexeme :: Megaparsec a -> Megaparsec a
+lexeme = Lex.lexeme space
+
+symbol ∷ T.Text → Megaparsec T.Text
+symbol = Lex.symbol space
+
+-- | 'parens' parses something between parenthesis.
+parens ∷ Megaparsec a → Megaparsec a
+parens = between (symbol "(") (symbol ")")
