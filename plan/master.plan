@@ -4,7 +4,11 @@ issues {
   description "Make more usable tool"
 } internals -> (bugs * usability) ;
 
-bugs wrongTrust ;
+bugs wrongTrust * multipleYamlProjs ;
+
+multipleYamlProjs {
+  description "There is multiple keys allowed in yaml parser. This behaviour must be restricted"
+} ;
 
 wrongTrust {
   description "Trust is calculated wrong for this formula: '(a + b) * (a * b)'. Simplifier must can see, that trust must be just as for '(a * b)' but it does not. Potentially can be solved as the trust of sequential execution of precalculated plan"

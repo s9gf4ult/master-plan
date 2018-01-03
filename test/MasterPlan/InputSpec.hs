@@ -48,7 +48,7 @@ parserSpec
   -- ^ Variants that must be parsed to result
   -> Assertion
 parserSpec expected ts = for_ ts $ \t -> do
-  let res = runParser (expression projectName) "" t
+  let res = over _Left parseErrorPretty $ runParser (expression projectName) "" t
   assertEqual (T.unpack t) (Right expected) res
 
 spec :: Spec
@@ -64,7 +64,14 @@ spec = do
   describe "Expressions parser" $ do
     it "atom parser" $ do
       parserSpec (Atom "a")
-        ["a", " a", "a "]
+        ["a", " a", "a ", "(a)", "(  (a  ))"]
     it "sum parser" $ do
       parserSpec (Sum [Atom "a", Atom "b"])
-        ["a+b", "a+ b", " a + b "]
+        ["a+b", "a+ b", " a + b ", "(a+ (b ))", "(a) + (b)"]
+    it "prod parser" $ do
+      parserSpec (Product [Atom "a", Atom "b"])
+        ["a * b", "(a)*b", "a*b"]
+    it "sum of products parser" $ do
+      parserSpec (Sum [ Product [Atom "a", Atom "b"]
+                      , Product [Atom "c", Atom "d"]])
+        ["a * b + c * d", "(a * b) + c * d", "a*b+c*d"]

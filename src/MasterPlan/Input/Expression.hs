@@ -99,9 +99,12 @@ dotedAlphaNum = do
     Nothing -> fail "Name can not be empty"
     Just a  -> return a
 
-eitherJsonParser :: (Show e) => Either e a -> Parser a
+eitherJsonParser
+  :: (ShowErrorComponent e, Ord t, ShowToken t)
+  => Either (ParseError t e) a
+  -> Parser a
 eitherJsonParser = \case
-  Left e  -> fail $ show e
+  Left e  -> fail $ parseErrorPretty e
   Right a -> return a
 
 -- | Parses the part of right-hand-side after the optional properties
@@ -109,10 +112,10 @@ eitherJsonParser = \case
 expression
   :: Megaparsec a
   -> Megaparsec (Algebra a)
-expression subexpr =
-  spaced (makeExprParser term table <?> "expression")
+expression subexpr = space *> go
   where
-    term  = parens (expression subexpr) <|> (Atom <$> subexpr)
+    go    = makeExprParser term table <?> "expression"
+    term  = parens go <|> (Atom <$> lexeme subexpr)
     table = [[binary "*" (combineWith Product)]
             ,[binary "->" (combineWith Sequence)]
             ,[binary "+" (combineWith Sum)]]
@@ -123,7 +126,7 @@ expression subexpr =
 -- trailing spaces
 spaced :: Megaparsec a -> Megaparsec a
 spaced p = do
-  space -- may consume nothing
+  try space -- may consume nothing
   lexeme p
 
 lexeme :: Megaparsec a -> Megaparsec a
