@@ -35,7 +35,7 @@ parser {
 yaml {
   description "Replace parser with yaml"
   trust 80%
-  progress 80%
+  progress 100%
 };
 
 inhouseParser {
