@@ -6,10 +6,11 @@ import Test.HUnit
 import Test.Hspec
 import Test.Hspec.QuickCheck
 import Test.QuickCheck.Arbitrary.Generic
+import Test.QuickCheck.Gen
 
 instance (Arbitrary a) => Arbitrary (Algebra a) where
-  arbitrary = genericArbitrary
-  shrink = genericShrink
+  arbitrary = resize 3 $ genericArbitrary
+  shrink    = genericShrink
 
 propFlatten :: Algebra Int -> Bool
 propFlatten a = go $ flatten a
