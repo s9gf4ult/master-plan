@@ -1,5 +1,6 @@
 module MasterPlan.Algebra where
 
+import Control.DeepSeq
 import GHC.Generics (Generic)
 
 data Algebra a
@@ -8,6 +9,8 @@ data Algebra a
   | Sequence [Algebra a]
   | Atom a
   deriving (Eq, Show, Ord, Generic)
+
+instance (NFData a) => NFData (Algebra a)
 
 flatten :: Algebra a -> Algebra a
 flatten = \case
