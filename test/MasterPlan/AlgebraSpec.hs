@@ -4,15 +4,15 @@ import Data.List as L
 import MasterPlan.Algebra
 import Test.HUnit
 import Test.Hspec
-import Test.Hspec.QuickCheck
+import Test.Hspec.SmallCheck
 import Test.QuickCheck.Arbitrary.Generic
 import Test.QuickCheck.Gen
+import Test.SmallCheck
+import Test.SmallCheck.Series
 
-instance (Arbitrary a) => Arbitrary (Algebra a) where
-  arbitrary = resize 3 $ genericArbitrary
-  shrink    = genericShrink
+instance Serial m a => Serial m (Algebra a)
 
-propFlatten :: Algebra Int -> Bool
+propFlatten :: Algebra () -> Bool
 propFlatten a = go $ flatten a
   where
     go = \case
@@ -21,7 +21,7 @@ propFlatten a = go $ flatten a
       Product as  -> L.all noProds as && L.all go as
       Sequence as -> L.all noSeqs as && L.all go as
       where
-        noSums, noProds, noSeqs :: Algebra Int -> Bool
+        noSums, noProds, noSeqs :: Algebra () -> Bool
         noSums = \case
           Sum _ -> False
           _     -> True
@@ -62,4 +62,4 @@ spec = do
                  , Atom 6
                  ]
       flatten a @?= ex
-    prop "flattens all subtrees" propFlatten
+    it "flattens all subtrees" $ property $ forAll propFlatten
