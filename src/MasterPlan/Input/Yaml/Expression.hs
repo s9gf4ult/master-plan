@@ -1,4 +1,4 @@
-module MasterPlan.Input.Expression where
+module MasterPlan.Input.Yaml.Expression where
 
 import Data.Aeson
 import Data.Aeson.Types

@@ -72,8 +72,9 @@ library
                        , MasterPlan.Backend.Identity
                        , MasterPlan.Data
                        , MasterPlan.Input
-                       , MasterPlan.Input.Expression
-                       , MasterPlan.Input.Json
+                       , MasterPlan.Input.Yaml
+                       , MasterPlan.Input.Yaml.Struct
+                       , MasterPlan.Input.Yaml.Expression
                        , MasterPlan.Internal.Debug
                        , MasterPlan.Internal.TH
                        , MasterPlan.Project

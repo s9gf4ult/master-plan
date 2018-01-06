@@ -15,7 +15,6 @@ newtype Trust = Trust
   { unTrust :: Scientific
   } deriving (Eq, Ord, Show, FromJSON)
 
-
 newtype Progress = Progress
   { unProgress :: Scientific
   } deriving (Eq, Ord, Show, FromJSON)

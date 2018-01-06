@@ -1,4 +1,4 @@
-module MasterPlan.Input.Json where
+module MasterPlan.Input.Yaml.Struct where
 
 import Control.Lens
 import Data.Aeson
@@ -6,7 +6,7 @@ import Data.Aeson.TH
 import Data.HashMap.Strict
 import Data.Text as T
 import Data.Yaml
-import MasterPlan.Input.Expression
+import MasterPlan.Input.Yaml.Expression
 import MasterPlan.Internal.TH
 
 import qualified MasterPlan.Project as P

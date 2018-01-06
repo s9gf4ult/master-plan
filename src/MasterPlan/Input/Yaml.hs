@@ -1,4 +1,4 @@
-module MasterPlan.Input
+module MasterPlan.Input.Yaml
   ( module X
   ) where
 
