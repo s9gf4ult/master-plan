@@ -76,6 +76,7 @@ library
                        , MasterPlan.Input.Json
                        , MasterPlan.Internal.Debug
                        , MasterPlan.Internal.TH
+                       , MasterPlan.Project
 
 test-suite spec
   type:             exitcode-stdio-1.0

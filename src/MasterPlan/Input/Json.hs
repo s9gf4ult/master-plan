@@ -4,27 +4,21 @@ import Control.Lens
 import Data.Aeson
 import Data.Aeson.TH
 import Data.HashMap.Strict
-import Data.Scientific
 import Data.Text as T
 import Data.Yaml
 import MasterPlan.Input.Expression
 import MasterPlan.Internal.TH
 
-newtype Cost = Cost
-  { unCost :: Scientific
-  } deriving (Eq, Show, FromJSON)
-
-newtype Trust = Trust
-  { unTrust :: Scientific
-  } deriving (Eq, Show, FromJSON)
+import qualified MasterPlan.Project as P
 
 data Project = Project
   { _pTitle       :: Maybe Text
   , _pDescription :: Maybe Text
   , _pUrl         :: Maybe Text
   , _pOwner       :: Maybe Text
-  , _pCost        :: Maybe Cost
-  , _pTrust       :: Maybe Trust
+  , _pCost        :: Maybe P.Cost
+  , _pTrust       :: Maybe P.Trust
+  , _pProgress    :: Maybe P.Progress
   , _pExpression  :: Maybe Expression
   } deriving (Eq, Show)
 
@@ -41,6 +35,9 @@ instance FromJSON Project where
       owner <- o .:? "owner"
       cost  <- o .:? "cost"
       trust <- o .:? "trust"
+      prog <- o .:? "progress " >>= \case
+        Nothing -> o .:? "prog"
+        a       -> return a
       expr  <- o .:? "expression" >>= \case
         Nothing -> o .:? "expr"
         a       -> return a
@@ -51,6 +48,7 @@ instance FromJSON Project where
         , _pOwner       = owner
         , _pCost        = cost
         , _pTrust       = trust
+        , _pProgress    = prog
         , _pExpression  = expr }
     String t -> do
       expr <- parseExpression t
@@ -65,6 +63,7 @@ emptyProject = Project
   , _pOwner       = Nothing
   , _pCost        = Nothing
   , _pTrust       = Nothing
+  , _pProgress    = Nothing
   , _pExpression  = Nothing
   }
 
