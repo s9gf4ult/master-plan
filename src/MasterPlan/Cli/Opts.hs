@@ -3,13 +3,15 @@ module MasterPlan.Cli.Opts where
 import Control.Lens
 import Data.Text as T
 import MasterPlan.Input.Yaml
+import MasterPlan.Output.Diagrams
 import Options.Applicative
 
 -- |Type output from the command line parser
 data Opts = Opts
-  { _oInputPath   :: FilePath
-  , _oOutputPath  :: Maybe FilePath
-  , _oParsingOpts :: ParsingOpts
+  { _oInputPath     :: FilePath
+  , _oOutputPath    :: Maybe FilePath
+  , _oParsingOpts   :: ParsingOpts
+  , _oRenderOptions :: RenderOptions
   } deriving (Eq, Ord)
 
 makeLenses ''Opts
@@ -31,6 +33,7 @@ optsParser = Opts
                             <> help "output file name (.png, .tif, .bmp, .jpg and .pdf supported)"
                             <> metavar "FILENAME" ))
   <*> parsingOptsParser
+  <*> renderOptsParser
 
 parsingOptsParser :: Parser ParsingOpts
 parsingOptsParser = ParsingOpts
@@ -43,3 +46,6 @@ parsingOptsParser = ParsingOpts
                    <> metavar "NAME"))
   <*> switch ( long "strict"
                <> help "strict parsing: every project has to be defined")
+
+renderOptsParser :: Parser RenderOptions
+renderOptsParser = error "Not implemented: renderOptsParser"

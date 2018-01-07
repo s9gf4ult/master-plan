@@ -77,7 +77,10 @@ library
                        , MasterPlan.Input.Yaml.Interpretation
                        , MasterPlan.Input.Yaml.Struct
                        , MasterPlan.Internal.TH
+                       , MasterPlan.Output.Diagrams
                        , MasterPlan.Project
+                       , MasterPlan.Project.Calculate
+                       , MasterPlan.Project.Struct
 
 test-suite spec
   type:             exitcode-stdio-1.0
