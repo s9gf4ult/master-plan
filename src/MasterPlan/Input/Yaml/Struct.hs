@@ -77,6 +77,3 @@ data Module = Module
 makeLenses ''Module
 
 deriveFromJSON jsonOpts ''Module
-
-parseYamlModule :: FilePath -> IO (Either String Module)
-parseYamlModule fp = over _Left prettyPrintParseException <$> decodeFileEither fp

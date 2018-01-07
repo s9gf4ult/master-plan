@@ -5,7 +5,7 @@ import Data.Foldable
 import Data.HashMap.Strict as H
 import Data.Text as T
 import MasterPlan.Algebra
-import MasterPlan.Input
+import MasterPlan.Input.Yaml
 import Test.HUnit
 import Test.Hspec
 import Text.Megaparsec
