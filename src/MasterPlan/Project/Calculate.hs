@@ -37,16 +37,14 @@ planProject = \case
 planAlgebra :: Algebra (Project a) -> [ProjectPlan Task]
 planAlgebra = \case
   Sum ones -> ones >>= planAlgebra
-  Product algs -> do
-    plans <- traverse planAlgebra algs
-    return $ AnyOrder $ S.fromList $ removeSubplans plans
+  Product algs -> planProduct algs
   Sequence algs -> do
     plans <- traverse planAlgebra algs
     return $ DirectOrder $ cleanPlansSequence plans
+  Atom p -> planProject p
 
--- | Remove plans which are subset of other plans
-removeSubplans :: [ProjectPlan Task] -> [ProjectPlan Task]
-removeSubplans = error "Not implemented: removeSubplans"
+planProduct :: [Algebra (Project a)] -> [ProjectPlan Task]
+planProduct = error "Not implemented: planProduct"
 
 -- | Remove tasks from subsequent plans which are already executed
 cleanPlansSequence :: [ProjectPlan Task] -> [ProjectPlan Task]
