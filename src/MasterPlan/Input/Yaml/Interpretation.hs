@@ -20,5 +20,5 @@ parseYamlModule fp = over _Left prettyPrintParseException <$> decodeFileEither f
 loadYamlModules :: FilePath -> IO [Module]
 loadYamlModules = error "Not implemented: loadYamlModules"
 
-interpretModules :: [Module] -> ParsingOpts -> IO P.Project
+interpretModules :: [Module] -> ParsingOpts -> IO (P.Project ())
 interpretModules = error "Not implemented: interpretModules"
