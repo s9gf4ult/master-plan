@@ -24,12 +24,12 @@ newtype Variants a = Variants
   { unVariants :: [a]
   } deriving (Eq, Monoid, Functor, Foldable, Applicative, Monad)
 
--- | List of dependent tasks, projects or algebras. Meaning that all
+-- | Set of dependent tasks, projects or algebras. Meaning that all
 -- elements in a list form connected graph where each vertex is
 -- element and each edge is some kind of dependency between nodes
 newtype Dependent a = Dependent
-  { unDependent :: [a]
-  } deriving (Eq, Functor, Foldable, Traversable)
+  { unDependent :: Map a (Set a)
+  }
 
 removeDependent
   :: (Eq a)
