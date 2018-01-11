@@ -47,6 +47,7 @@ library
     default-extensions:  DeriveFoldable
                        , DeriveFunctor
                        , DeriveGeneric
+                       , DeriveTraversable
                        , FlexibleInstances
                        , FunctionalDependencies
                        , GeneralizedNewtypeDeriving
@@ -83,6 +84,7 @@ library
                        , MasterPlan.Input.Yaml.Expression
                        , MasterPlan.Input.Yaml.Interpretation
                        , MasterPlan.Input.Yaml.Struct
+                       , MasterPlan.Internal.Import
                        , MasterPlan.Internal.TH
                        , MasterPlan.Output.Diagrams
                        , MasterPlan.Project
