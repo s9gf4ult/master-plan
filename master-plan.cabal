@@ -75,6 +75,7 @@ library
                        , syb
                        , text
                        , unordered-containers
+                       , vector
                        , yaml
     exposed-modules:     MasterPlan.Algebra
                        , MasterPlan.Cli
@@ -89,6 +90,7 @@ library
                        , MasterPlan.Output.Diagrams
                        , MasterPlan.Project
                        , MasterPlan.Project.Calculate
+                       , MasterPlan.Project.Graph
                        , MasterPlan.Project.Struct
 
 test-suite spec

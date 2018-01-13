@@ -1,13 +1,15 @@
 module MasterPlan.Project.Calculate where
 
 import Control.Arrow
-import Data.Foldable as F
 import Control.Lens
+import Data.Foldable as F
 import Data.List as L
 import Data.Map.Strict as M
 import Data.Set as S
+import Data.Vector as V
 import MasterPlan.Algebra
 import MasterPlan.Internal.Import
+import MasterPlan.Project.Graph
 import MasterPlan.Project.Struct
 
 calculateProject :: Project () -> Project Calculation
@@ -24,33 +26,7 @@ newtype Variants a = Variants
   { unVariants :: [a]
   } deriving (Eq, Monoid, Functor, Foldable, Applicative, Monad)
 
--- | Set of dependent tasks, projects or algebras. Meaning that all
--- elements in a list form connected graph where each vertex is
--- element and each edge is some kind of dependency between nodes
-newtype Dependent a = Dependent
-  { unDependent :: Map a (Set a)
-  }
 
-removeDependent
-  :: (Eq a)
-  => a
-  -- ^ Element to remove from dependent collection
-  -> Dependent a
-  -> [Dependent a]
-  -- ^ Result is list of independent from each other dependent
-  -- collections elements
-removeDependent = error "Not implemented: splitDependent"
-
-mkDependents
-  :: (a -> a -> Bool)
-  -- ^ Check if two elems are dependent
-  -> [a]
-  -> [Dependent a]
-mkDependents = error "Not implemented: mkDependents"
-
--- | Ther key of result is the count of connections with other elements.
-connectivityMap :: Dependent a -> Map Int [a]
-connectivityMap = error "Not implemented: connectivityMap"
 
 -- | List of elements where each subsequent element depends from
 -- previous.
@@ -59,7 +35,7 @@ newtype SequencePlan a = SequencePlan
   } deriving (Eq)
 
 sequenceLen :: SequencePlan a -> Int
-sequenceLen (SequencePlan a) = length a
+sequenceLen (SequencePlan a) = L.length a
 
 sequencePlan :: SequencePlan Task -> ProjectPlan Task
 sequencePlan (SequencePlan a) = DirectOrder $ cleanPlansSequence a
@@ -96,7 +72,7 @@ planAlgebra
   -> Variants (ProjectPlan Task)
 planAlgebra = \case
   Sum ones -> Variants ones >>= planAlgebra
-  Product algs  -> planProduct algs
+  Product algs  -> planProduct $ V.fromList algs
   Sequence algs -> do
     plans <- traverse planAlgebra algs
     return $ DirectOrder $ cleanPlansSequence plans
@@ -104,12 +80,12 @@ planAlgebra = \case
 
 planProduct
   :: forall a. (Ord a)
-  => [Algebra (Project a)]
+  => Vector (Algebra (Project a))
   -> Variants (ProjectPlan Task)
 planProduct algs =
   let
-    connected :: [Dependent (Algebra (Project a))]
-    connected = mkDependents algebraConnected algs
+    connected :: [ConnectedComponent (Algebra (Project a))]
+    connected = mkConnectedComponents algebraConnected algs
     res = case connected of
       [single] -> connectedAlgebrasPlan single
       _        ->
@@ -136,7 +112,7 @@ allSubprojects a = do
 -- algebras have common projects
 connectedAlgebrasPlan
   :: (Ord a)
-  => Dependent (Algebra (Project a))
+  => ConnectedComponent (Algebra (Project a))
   -> Variants (ProjectPlan Task)
 connectedAlgebrasPlan algs =
   let
@@ -155,7 +131,7 @@ connectedAlgebrasPlan algs =
 
 possibleDirectPlans
   :: forall a. (Ord a)
-  => Dependent (Algebra (Project a))
+  => ConnectedComponent (Algebra (Project a))
   -- ^ Algebras having common projects in formula
   -> Variants (SequencePlan Task)
   -- ^ Variants of sequences. Each list in variant is a payload for
@@ -169,7 +145,7 @@ possibleDirectPlans algs = do
       ((_, a):_) -> a
   cuttedNode <- Variants mostConnected
   headPlan <- planAlgebra cuttedNode
-  let independents = removeDependent cuttedNode algs
+  let independents = removeConnectedComponent cuttedNode algs
   tailPlans <- traverse possibleDirectPlans independents
   return $ SequencePlan
     [ headPlan
