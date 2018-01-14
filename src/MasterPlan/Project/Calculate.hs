@@ -138,13 +138,16 @@ possibleDirectPlans
 possibleDirectPlans algs = do
   let
     conMap :: Map Int [Algebra (Project a)]
-    conMap = connectivityMap algs
+    conMap = M.fromListWith (++)
+      $ fmap (snd &&& ((:[]) . fst))
+      $ M.toList
+      $ edgesCount algs
     mostConnected = case M.toDescList conMap of
       []         -> mempty
       ((_, a):_) -> a
   cuttedNode <- Variants mostConnected
   headPlan <- planAlgebra cuttedNode
-  let independents = removeConnectedComponent cuttedNode algs
+  let independents = removeNode cuttedNode algs
   tailPlans <- traverse possibleDirectPlans independents
   return $ SequencePlan
     [ headPlan

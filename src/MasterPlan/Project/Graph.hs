@@ -1,4 +1,10 @@
-module MasterPlan.Project.Graph where
+module MasterPlan.Project.Graph
+  ( ConnectedComponent
+  , removeNode
+  , mkConnectedComponents
+  , edgesCount
+  )
+where
 
 import Data.List as L
 import Data.Map.Strict as M
@@ -9,13 +15,11 @@ import MasterPlan.Internal.Import
 -- elements in a list form undirected connected graph where each
 -- vertex is element and each edge is some kind of dependency between
 -- nodes
-newtype ConnectedComponent a = ConnectedComponent
-  { unConnectedComponent :: Graph a
-  }
+newtype ConnectedComponent a = ConnectedComponent (Graph a)
 
 type Graph a = Map a (Set a)
 
-removeConnectedComponent
+removeNode
   :: (Ord a)
   => a
   -- ^ Element to remove from dependent collection
@@ -23,7 +27,7 @@ removeConnectedComponent
   -> [ConnectedComponent a]
   -- ^ Result is list of independent from each other dependent
   -- collections elements
-removeConnectedComponent a (ConnectedComponent cc) =
+removeNode a (ConnectedComponent cc) =
   let removed = S.delete a <$> M.delete a cc
   in ConnectedComponent <$> graphComponents removed
 
@@ -71,6 +75,7 @@ mkGraph f els = M.fromListWith S.union $ do
   guard $ f a b
   return (a, S.singleton b)
 
--- | Ther key of result is the count of connections with other elements.
-connectivityMap :: ConnectedComponent a -> Map Int [a]
-connectivityMap = error "Not implemented: connectivityMap"
+edgesCount :: (Ord a) => ConnectedComponent a -> Map a Int
+edgesCount (ConnectedComponent g) = M.fromListWith (+) $ do
+  (f, t) <- M.toList g
+  (f, S.size t):(L.zip (S.toList t) $ repeat 1)
