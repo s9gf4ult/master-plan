@@ -5,8 +5,6 @@ import MasterPlan.Algebra
 import Test.HUnit
 import Test.Hspec
 import Test.Hspec.SmallCheck
-import Test.QuickCheck.Arbitrary.Generic
-import Test.QuickCheck.Gen
 import Test.SmallCheck
 import Test.SmallCheck.Series
 

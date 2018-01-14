@@ -84,7 +84,7 @@ planProduct
 planProduct algs =
   let
     connected :: [ConnectedComponent (Algebra (Project a))]
-    connected = mkConnectedComponents algebraConnected algs
+    connected = connectedComponents algebraConnected algs
     res = case connected of
       [single] -> connectedAlgebrasPlan single
       _        ->

@@ -1,7 +1,9 @@
 module MasterPlan.Project.Graph
-  ( ConnectedComponent
+  ( ConnectedComponent(unConnectedComponent)
+  , Graph
+  , graphComponents
   , removeNode
-  , mkConnectedComponents
+  , connectedComponents
   , edgesCount
   )
 where
@@ -15,7 +17,9 @@ import MasterPlan.Internal.Import
 -- elements in a list form undirected connected graph where each
 -- vertex is element and each edge is some kind of dependency between
 -- nodes
-newtype ConnectedComponent a = ConnectedComponent (Graph a)
+newtype ConnectedComponent a = ConnectedComponent
+  { unConnectedComponent :: (Graph a)
+  }
 
 type Graph a = Map a (Set a)
 
@@ -31,7 +35,7 @@ removeNode a (ConnectedComponent cc) =
   let removed = S.delete a <$> M.delete a cc
   in ConnectedComponent <$> graphComponents removed
 
-graphComponents :: forall a. (Ord a) => Map a (Set a) -> [Map a (Set a)]
+graphComponents :: forall a. (Ord a) => Graph a -> [Graph a]
 graphComponents = go [] emptyCurrent
   where
     emptyCurrent = (S.empty, M.empty)
@@ -59,13 +63,13 @@ graphComponents = go [] emptyCurrent
       then cur:acc:rest
       else (S.union accS curS, M.unionWith S.union accG curG):rest
 
-mkConnectedComponents
+connectedComponents
   :: (Ord a)
   => (a -> a -> Bool)
   -- ^ Check if two elems are dependent
   -> [a]
   -> [ConnectedComponent a]
-mkConnectedComponents f v =
+connectedComponents f v =
   fmap ConnectedComponent $ graphComponents $ mkGraph f v
 
 mkGraph :: (Ord a) => (a -> a -> Bool) -> [a] -> Graph a
