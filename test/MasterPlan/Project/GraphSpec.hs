@@ -4,7 +4,6 @@ import Control.Applicative as A
 import Data.Foldable
 import Data.List as L
 import Data.Set as S
-import Data.Word
 import MasterPlan.Project.Graph
 import Test.Hspec
 import Test.Hspec.SmallCheck
@@ -27,12 +26,14 @@ propDoubleSplit as = do
     _ -> Left $ show cc
   return "Ok"
 
-depInt :: Series m Int
-depInt = decDepth $ generate $ \d ->
-  if d >= 0 then [0..d] else A.empty
-
 depTuple :: (Monad m) => Series m (Int, Int)
-depTuple = (,) <$> depInt <~> depInt
+depTuple = generate $ \d ->
+  if d >= 0 then go d else A.empty
+  where
+    go d = L.take 10 $ do
+      (a:as) <- L.tails $ L.reverse [0..d]
+      b <- as
+      return (a, b)
 
 genInts :: (Monad m) => Series m [(Int, Int)]
 genInts = cons0 [] \/ intsCons
@@ -42,4 +43,5 @@ genInts = cons0 [] \/ intsCons
 spec :: Spec
 spec = describe "Graph spec" $ do
   it "No double split" $ property
+    $ changeDepth (const 6)
     $ over genInts propDoubleSplit
