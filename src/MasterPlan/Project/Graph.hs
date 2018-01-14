@@ -5,8 +5,7 @@ module MasterPlan.Project.Graph
   , removeNode
   , connectedComponents
   , edgesCount
-  )
-where
+  ) where
 
 import Data.List as L
 import Data.Map.Strict as M
@@ -44,7 +43,7 @@ graphComponents = go [] emptyCurrent
 
     go :: [(Set a, Graph a)] -> (Set a, Graph a) -> Graph a -> [Graph a]
     go acc current graph = case M.minViewWithKey graph of
-      Nothing                    -> fmap snd $ current : acc
+      Nothing                    -> fmap snd $ nonEmptyCurrent acc current
       Just ((k, v), cuttedGraph) ->
         let (newCurrent, newGraph) = wideCut (S.toList v) (insertKV k v current) cuttedGraph
         in go (appendAcc acc newCurrent) emptyCurrent newGraph
@@ -62,6 +61,11 @@ graphComponents = go [] emptyCurrent
     appendAcc ((acc@(accS, accG)):rest) cur@(curS, curG) = if S.null $ S.intersection accS curS
       then cur:acc:rest
       else (S.union accS curS, M.unionWith S.union accG curG):rest
+
+    nonEmptyCurrent [] x = [x]
+    nonEmptyCurrent as current@(_, g) = if M.null g
+      then as   -- To prevent adding empty graph as last element every time
+      else current : as
 
 connectedComponents
   :: (Ord a)
