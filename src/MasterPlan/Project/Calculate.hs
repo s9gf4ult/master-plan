@@ -6,7 +6,6 @@ import Data.Foldable as F
 import Data.List as L
 import Data.Map.Strict as M
 import Data.Set as S
-import Data.Vector as V
 import MasterPlan.Algebra
 import MasterPlan.Internal.Import
 import MasterPlan.Project.Graph
@@ -72,7 +71,7 @@ planAlgebra
   -> Variants (ProjectPlan Task)
 planAlgebra = \case
   Sum ones -> Variants ones >>= planAlgebra
-  Product algs  -> planProduct $ V.fromList algs
+  Product algs  -> planProduct algs
   Sequence algs -> do
     plans <- traverse planAlgebra algs
     return $ DirectOrder $ cleanPlansSequence plans
@@ -80,7 +79,7 @@ planAlgebra = \case
 
 planProduct
   :: forall a. (Ord a)
-  => Vector (Algebra (Project a))
+  => [Algebra (Project a)]
   -> Variants (ProjectPlan Task)
 planProduct algs =
   let
