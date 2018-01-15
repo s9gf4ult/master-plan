@@ -18,7 +18,7 @@ import MasterPlan.Internal.Import
 -- nodes
 newtype ConnectedComponent a = ConnectedComponent
   { unConnectedComponent :: (Graph a)
-  }
+  } deriving (Eq, Ord, Show)
 
 type Graph a = Map a (Set a)
 
