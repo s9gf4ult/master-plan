@@ -107,6 +107,7 @@ test-suite spec
                      , RankNTypes
                      , TemplateHaskell
                      , UnicodeSyntax
+                     , ViewPatterns
   build-depends:    base >= 4.5 && < 5
                   , HUnit
                   , QuickCheck
