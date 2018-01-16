@@ -76,7 +76,12 @@ taskList {
   description "Print list of tasks which may be executed (not depend from any other task) selected and sorted by arbitrary condition"
 } ;
 
-processing nesting * multipleRating * defaultRatings * allowCycles * removeDeadPlanCode * resourceManagement * (scheduling -> googleCalendarIntegration) * orgModeIntegration ;
+processing nesting * multipleRating * defaultRatings * allowCycles * removeDeadPlanCode * resourceManagement * (scheduling -> googleCalendarIntegration) * orgModeIntegration * metaprojects ;
+
+metaprojects {
+  description "Ability to create metraprojects (or metaformula?) which consists of product or sum of some set of projects selected by arbitrary condition (tag, dependency on other project, all non-meta projects in module and so on)"
+  trust 80%
+} ;
 
 nesting modules * localVariables ;
 
