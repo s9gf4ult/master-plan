@@ -57,6 +57,7 @@ library
                        , ScopedTypeVariables
                        , TemplateHaskell
                        , UnicodeSyntax
+                       , ViewPatterns
     build-depends:       base >= 4.5 && < 5
                        , aeson >= 1.1.0.0
                        , containers
@@ -70,6 +71,7 @@ library
                        , megaparsec >= 6.0.0
                        , mtl
                        , optparse-applicative
+                       , pointed
                        , scientific
                        , semigroups
                        , syb
@@ -91,6 +93,7 @@ library
                        , MasterPlan.Project
                        , MasterPlan.Project.Calculate
                        , MasterPlan.Project.Graph
+                       , MasterPlan.Project.Plan
                        , MasterPlan.Project.Struct
 
 test-suite spec

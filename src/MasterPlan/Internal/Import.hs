@@ -9,3 +9,5 @@ import Control.Lens as X
 import Control.Monad as X
 import Data.Foldable as X
 import Data.Monoid as X hiding (Sum(..), Product(..))
+import Data.Pointed as X
+import Data.Scientific as X

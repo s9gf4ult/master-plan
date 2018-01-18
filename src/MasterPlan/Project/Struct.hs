@@ -1,11 +1,11 @@
 module MasterPlan.Project.Struct where
 
-import Control.Lens
 import Data.Aeson
 import Data.Scientific
-import Data.Set as S
 import Data.Text as T
 import MasterPlan.Algebra
+import MasterPlan.Internal.Import
+import MasterPlan.Project.Plan
 
 newtype Cost = Cost
   { unCost :: Scientific
@@ -31,17 +31,6 @@ data Composite a = Composite
   , _compositeAttributes :: Attributes
   , _compositePayload    :: a
   } deriving (Eq, Ord)
-
--- | The plan of project execution.
-data ProjectPlan a
-  = DirectOrder [ProjectPlan a]
-  -- ^ Subplans of 'DirectOrder' are transitively dependent. Meaning
-  -- if we have @a -> b -> c@ then @a -> c@
-  | AnyOrder (Set (ProjectPlan a))
-  -- ^ All subplans of AnyOrder are independent. They may be executed
-  -- sequentially in any order or even simultaneously
-  | PlannedTask a
-  deriving (Eq, Ord, Foldable)
 
 -- | Payload for 'Project'
 data Calculation = Calculation
