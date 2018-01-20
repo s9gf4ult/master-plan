@@ -48,6 +48,7 @@ library
                        , DeriveFunctor
                        , DeriveGeneric
                        , DeriveTraversable
+                       , FlexibleContexts
                        , FlexibleInstances
                        , FunctionalDependencies
                        , GeneralizedNewtypeDeriving

@@ -2,6 +2,7 @@ module MasterPlan.Project.Calculate where
 
 import Control.Arrow
 import Control.Lens
+import Control.Monad.State.Strict
 import Data.Foldable as F
 import Data.List as L
 import Data.Map.Strict as M
@@ -41,10 +42,31 @@ variants = Variants
 -- sequencePlan :: SequencePlan Task -> ProjectPlan Task
 -- sequencePlan (SequencePlan a) = DirectOrder $ cleanPlansSequence a
 
--- -- | Remove tasks from subsequent plans which are already executed
--- cleanPlansSequence :: [ProjectPlan Task] -> [ProjectPlan Task]
--- cleanPlansSequence = error "Not implemented: cleanPlansSequence"
-
+-- | Remove tasks from subsequent plans which are already executed
+cleanPlanSequence :: [ProjectPlan Task] -> [ProjectPlan Task]
+cleanPlanSequence plans = flip evalState S.empty $ do
+  traverse go plans
+  where
+    go plan = case plan of
+      DirectOrderPlan p -> DirectOrderPlan <$> goDirectOrder p
+      AnyOrderPlan p    -> AnyOrderPlan <$> goAnyOrder p
+    goDirectOrder d = case d of
+      DirectOrder d -> DirectOrder <$> traverse goAnyOrder d
+      PlannedTask a -> do
+        s <- get
+        case S.member a s of
+          True -> return $ ReferencedTask a
+          False -> do
+            put $ S.insert a s
+            return $ PlannedTask a
+      a@(ReferencedTask {})-> return a
+    goAnyOrder (AnyOrder (S.toList -> ao)) = do
+      x <- traverse goDirectOrder ao
+      -- NOTE: We hope that subplans of AnyOrder have no common tasks
+      -- (while this is semantic of AnyOrder) so traverse must just
+      -- replace existing PlannedTasks to ReferencedTask for tasks
+      -- which already was added earlier
+      return $ AnyOrder $ S.fromList x
 
 {-| Calculates plan of arbitrary project
 
@@ -74,14 +96,16 @@ planAlgebra
 planAlgebra = \case
   Sum ones      -> variants ones >>= planAlgebra
   Product algs  -> planProduct algs
-  Sequence algs -> planSequence algs
+  Sequence algs -> DirectOrderPlan <$> planSequence algs
   Atom p        -> planProject p
 
 planSequence
   :: (Ord a)
   => [Algebra (Project a)]
-  -> Variants (ProjectPlan Task)
-planSequence = error "Not implemented: planSequence"
+  -> Variants (DirectOrder Task)
+planSequence algs = do
+  seqPlan <- traverse planAlgebra algs
+  return $ directOrder $ cleanPlanSequence seqPlan
 
 planProduct
   :: forall a. (Ord a)
