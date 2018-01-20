@@ -45,6 +45,9 @@ anyOrder plans = AnyOrder $ S.unions $ toDirectOrder <$> plans
 data DirectOrder a
   = DirectOrder [AnyOrder a]
   | PlannedTask a
+  | ReferencedTask a
+  -- ^ Task which will be already executed at this point, but may be
+  -- needed to draw planning graph
   deriving (Eq, Ord)
 
 instance Pointed DirectOrder where
