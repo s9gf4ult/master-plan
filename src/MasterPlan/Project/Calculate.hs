@@ -86,7 +86,11 @@ cleanPlanSequence plan = flip evalState S.empty go
               put $ S.insert aop s
               res <- goAnyOrder ao
               return $ Just res
-        return $ DirectOrder $ catMaybes maos
+        let
+          res = case catMaybes maos of
+            [anyOrderSingular -> Just t] -> point t
+            x                            -> DirectOrder x
+        return res
       a@(PlannedTask {}) -> return a
       -- This case will be checked in 'goAnyOrder'
     goAnyOrder :: AnyOrder Task -> State (Set (ProjectPlan Task)) (AnyOrder Task)
@@ -101,9 +105,11 @@ cleanPlanSequence plan = flip evalState S.empty go
               let (resDir, resS) = runState (goDirectOrder dir) s
               in Just (resDir, S.insert p resS)
         finalS = S.unions $ snd <$> aoProcessed
-        finalDirs = fst <$> aoProcessed
+        res = case fst <$> aoProcessed of
+          [directOrderSingular -> Just t] -> anyOrderPoint t
+          x -> AnyOrder $ S.fromList x
       put finalS
-      return $ AnyOrder $ S.fromList finalDirs
+      return res
 
 deintersectPlan :: ProjectPlan a -> Variants (ProjectPlan a)
 deintersectPlan = \case
@@ -113,10 +119,10 @@ deintersectPlan = \case
 deintersectSequence :: DirectOrder a -> Variants (DirectOrder a)
 deintersectSequence = \case
   DirectOrder aos -> DirectOrder <$> traverse deintersectProduct aos
-  PlannedTask t -> return t
+  t@(PlannedTask {}) -> return t
 
 deintersectProduct :: AnyOrder a -> Variants (AnyOrder a)
-deintersectProduct (AnyOrder directs) = do
+deintersectProduct (AnyOrder directs) = (error "FIXME: ")
 
 
 -- planAlgebra
