@@ -49,7 +49,7 @@ planProject
   -- ^ List of possible plans.
 planProject proj = do
   dirtyPlan <- dirtyPlanProject proj
-  deintersectProducts $ cleanPlanSequence dirtyPlan
+  deintersectPlan $ cleanPlanSequence dirtyPlan
 
 dirtyPlanProject :: Project a -> Variants (ProjectPlan Task)
 dirtyPlanProject = \case
@@ -105,8 +105,19 @@ cleanPlanSequence plan = flip evalState S.empty go
       put finalS
       return $ AnyOrder $ S.fromList finalDirs
 
-deintersectProducts :: ProjectPlan a -> Variants (ProjectPlan a)
-deintersectProducts = error "Not implemented: deintersectProducts"
+deintersectPlan :: ProjectPlan a -> Variants (ProjectPlan a)
+deintersectPlan = \case
+  DirectOrderPlan direct -> DirectOrderPlan <$> deintersectSequence direct
+  AnyOrderPlan ao -> AnyOrderPlan <$> deintersectProduct ao
+
+deintersectSequence :: DirectOrder a -> Variants (DirectOrder a)
+deintersectSequence = \case
+  DirectOrder aos -> DirectOrder <$> traverse deintersectProduct aos
+  PlannedTask t -> return t
+
+deintersectProduct :: AnyOrder a -> Variants (AnyOrder a)
+deintersectProduct (AnyOrder directs) = do
+
 
 -- planAlgebra
 --   :: (Ord a)
