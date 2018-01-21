@@ -69,11 +69,11 @@ dirtyAlgebraPlan = \case
 
 -- | Remove tasks from subsequent plans which are already executed
 cleanPlanSequence :: ProjectPlan Task -> ProjectPlan Task
-cleanPlanSequence plan = flip evalState S.empty go
+cleanPlanSequence plan = evalState go S.empty
   where
     go = case plan of
       DirectOrderPlan p -> DirectOrderPlan <$> goDirectOrder p
-      AnyOrderPlan p    -> AnyOrderPlan <$> goAnyOrder p
+      AnyOrderPlan p    -> AnyOrderPlan    <$> goAnyOrder p
     goDirectOrder :: DirectOrder Task -> State (Set (ProjectPlan Task)) (DirectOrder Task)
     goDirectOrder d = case d of
       DirectOrder d -> do
@@ -107,114 +107,55 @@ cleanPlanSequence plan = flip evalState S.empty go
         finalS = S.unions $ snd <$> aoProcessed
         res = case fst <$> aoProcessed of
           [directOrderSingular -> Just t] -> anyOrderPoint t
-          x -> AnyOrder $ S.fromList x
+          x                               -> AnyOrder $ S.fromList x
       put finalS
       return res
 
-deintersectPlan :: ProjectPlan a -> Variants (ProjectPlan a)
+deintersectPlan :: (Ord a) => ProjectPlan a -> Variants (ProjectPlan a)
 deintersectPlan = \case
   DirectOrderPlan direct -> DirectOrderPlan <$> deintersectSequence direct
-  AnyOrderPlan ao -> AnyOrderPlan <$> deintersectProduct ao
+  AnyOrderPlan ao        -> AnyOrderPlan    <$> deintersectProduct ao
 
-deintersectSequence :: DirectOrder a -> Variants (DirectOrder a)
+deintersectSequence :: (Ord a) => DirectOrder a -> Variants (DirectOrder a)
 deintersectSequence = \case
-  DirectOrder aos -> DirectOrder <$> traverse deintersectProduct aos
+  DirectOrder aos    -> DirectOrder <$> traverse deintersectProduct aos
   t@(PlannedTask {}) -> return t
 
-deintersectProduct :: AnyOrder a -> Variants (AnyOrder a)
-deintersectProduct (AnyOrder directs) = (error "FIXME: ")
+deintersectProduct
+  :: (Ord a)
+  => AnyOrder a
+  -> Variants (AnyOrder a)
+deintersectProduct (AnyOrder (S.toList -> directs)) = do
+  let
+    ccs = connectedComponents haveCommonTasks directs
+  plans <- traverse planConnectedComponent ccs
+  return $ anyOrder plans
 
+haveCommonTasks
+  :: (Ord a)
+  => DirectOrder a
+  -> DirectOrder a -> Bool
+haveCommonTasks d1 d2 = not $ S.null
+  $ S.intersection (S.fromList $ F.toList d1) (S.fromList $ F.toList d2)
 
--- planAlgebra
---   :: (Ord a)
---   => Algebra (Project a)
---   -> Variants (ProjectPlan Task)
--- planAlgebra = \case
---   Sum ones      -> variants ones >>= planAlgebra
---   Product algs  -> planProduct algs
---   Sequence algs -> DirectOrderPlan <$> planSequence algs
---   Atom p        -> planProject p
-
--- planSequence
---   :: (Ord a)
---   => [Algebra (Project a)]
---   -> Variants (DirectOrder Task)
--- planSequence algs = do
---   seqPlan <- traverse planAlgebra algs
---   return $ directOrder $ cleanPlanSequence seqPlan
-
--- planProduct
---   :: forall a. (Ord a)
---   => [Algebra (Project a)]
---   -> Variants (ProjectPlan Task)
--- planProduct algs = do
---   let
---     connected :: [ConnectedComponent (Algebra (Project a))]
---     connected = connectedComponents algebraConnected algs
---   case connected of
---     [single] -> connectedAlgebrasPlan single
---     _        -> do
---       independents <- traverse connectedAlgebrasPlan connected
---       return $ AnyOrderPlan $ anyOrder independents
-
--- algebraConnected
---   :: (Ord a)
---   => Algebra (Project a)
---   -> Algebra (Project a)
---   -> Bool
--- algebraConnected a b = not $ S.null
---   $ S.intersection (S.fromList $ allSubprojects a) (S.fromList $ allSubprojects b)
-
--- allSubprojects :: Algebra (Project a) -> [Project a]
--- allSubprojects a = do
---   proj <- F.toList a
---   let nestedProjs = (proj ^.. _PComposite . algebra) >>= allSubprojects
---   proj : nestedProjs
-
--- -- | Plan algebras having common projects. All algebras are depend
--- -- with each other. Meaning they form non-strongly connected graph
--- -- where each vertex is an algebra and each edge is the fact that two
--- -- algebras have common projects
--- connectedAlgebrasPlan
---   :: (Ord a)
---   => ConnectedComponent (Algebra (Project a))
---   -> Variants (ProjectPlan Task)
--- connectedAlgebrasPlan algs =
---   let
---     -- Plans grouped by length. Current heuristic is to take shortest
---     -- plans from whole list to minimize computational overhead
---     plansLenMap :: Map Int (Variants (DirectOrder Task))
---     plansLenMap
---       = M.fromListWith (<>)
---       $ unVariants
---       $ fmap (directOrderLength &&& pure)
---       $ possibleDirectPlans algs
---     directPlans = case M.toAscList plansLenMap of
---       []             -> mempty
---       ((_, plans):_) -> plans
---   in DirectOrderPlan <$> directPlans
-
--- possibleDirectPlans
---   :: forall a. (Ord a)
---   => ConnectedComponent (Algebra (Project a))
---   -- ^ Algebras having common projects in formula
---   -> Variants (DirectOrder Task)
---   -- ^ Variants of sequences. Each list in variant is a payload for
---   -- 'DirectOrder' constructor
--- possibleDirectPlans algs = do
---   let
---     conMap :: Map Int [Algebra (Project a)]
---     conMap = M.fromListWith (++)
---       $ fmap (snd &&& ((:[]) . fst))
---       $ M.toList
---       $ edgesCount algs
---     mostConnected = case M.toDescList conMap of
---       []         -> mempty
---       ((_, a):_) -> a
---   cuttedNode <- variants mostConnected
---   headPlan <- planAlgebra cuttedNode
---   let independents = removeNode cuttedNode algs
---   tailPlans <- traverse possibleDirectPlans independents
---   return $ directOrder
---     [ headPlan
---     , AnyOrderPlan $ AnyOrder $ S.fromList tailPlans ]
+planConnectedComponent
+  :: forall a. (Ord a)
+  => ConnectedComponent (DirectOrder a)
+  -> Variants (ProjectPlan a)
+planConnectedComponent cc = do
+  let
+    conMap :: Map Int [DirectOrder a]
+    conMap = M.fromListWith (++)
+      $ fmap (snd &&& ((:[]) . fst))
+      $ M.toList
+      $ edgesCount cc
+    mostConnected = case M.toDescList conMap of
+      []         -> mempty
+      ((_, a):_) -> a
+  cuttedNode <- variants mostConnected
+  headPlan <- deintersectSequence cuttedNode
+  let least = removeNode cuttedNode cc
+  tailPlans <- traverse planConnectedComponent least
+  return $ DirectOrderPlan $ directOrder
+    [ DirectOrderPlan headPlan
+    , AnyOrderPlan $ anyOrder tailPlans ]

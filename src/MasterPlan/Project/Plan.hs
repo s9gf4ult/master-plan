@@ -8,7 +8,7 @@ import MasterPlan.Internal.Import
 data ProjectPlan a
   = DirectOrderPlan (DirectOrder a)
   | AnyOrderPlan (AnyOrder a)
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Foldable)
 
 projectPlanSingular :: ProjectPlan a -> Maybe a
 projectPlanSingular = \case
@@ -30,7 +30,7 @@ instance Pointed ProjectPlan where
 
 newtype AnyOrder a
   = AnyOrder (Set (DirectOrder a))
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Foldable)
 
 anyOrderPoint :: (Ord a) => a -> AnyOrder a
 anyOrderPoint a = AnyOrder $ S.fromList [point a]
@@ -46,7 +46,7 @@ anyOrder plans = AnyOrder $ S.unions $ toDirectOrder <$> plans
 data DirectOrder a
   = DirectOrder [AnyOrder a]
   | PlannedTask a
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Foldable)
 
 instance Pointed DirectOrder where
   point a = PlannedTask a
