@@ -22,7 +22,8 @@ directOrderSingular = \case
   PlannedTask a    -> Just a
 
 anyOrderSingular :: AnyOrder a -> Maybe a
-anyOrderSingular = error "Not implemented: anyOrderSingular"
+anyOrderSingular (AnyOrder (S.toList -> [direct])) = directOrderSingular direct
+anyOrderSingular _ = Nothing
 
 instance Pointed ProjectPlan where
   point a = DirectOrderPlan $ point a
@@ -45,9 +46,6 @@ anyOrder plans = AnyOrder $ S.unions $ toDirectOrder <$> plans
 data DirectOrder a
   = DirectOrder [AnyOrder a]
   | PlannedTask a
-  | ReferencedTask a
-  -- ^ Task which will be already executed at this point, but may be
-  -- needed to draw planning graph
   deriving (Eq, Ord)
 
 instance Pointed DirectOrder where
