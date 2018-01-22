@@ -1,10 +1,7 @@
 module MasterPlan.Project.Calculate where
 
-import Control.Arrow
-import Control.Lens
 import Control.Monad.State.Strict
 import Data.Foldable as F
-import Data.List as L
 import Data.Map.Strict as M
 import Data.Set as S
 import MasterPlan.Algebra
