@@ -23,15 +23,6 @@ ccFromTuples as =
     ccs = connectedComponents haveEdge els
   in ccs
 
--- -- | Remove hanging nodes
--- cleanGraph :: Graph Int () -> Graph Int ()
--- cleanGraph g =
---   let
---     toNodes = S.unions $ snd <$> M.toList g
---     res = M.filterWithKey nonEmpty g
---     nonEmpty k v = not $ S.member k toNodes && S.null v
---   in res
-
 propDoubleSplit :: [GraphTuple] -> Either Reason Reason
 propDoubleSplit tuples = do
   let
@@ -95,7 +86,6 @@ spec = describe "Graph spec" $ do
           $ fmap unConnectedComponent
           $ ccFromTuples [ (1, 2), (4, 5) ]
       res @?= expected
-
 
   describe "Props" $ do
     it "No double split" $ property

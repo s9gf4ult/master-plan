@@ -1,5 +1,6 @@
 module MasterPlan.Project.Plan where
 
+import Data.Foldable as F
 import Data.List as L
 import Data.Set as S
 import MasterPlan.Internal.Import
@@ -65,3 +66,13 @@ directOrder plans = DirectOrder $ plans >>= toAnyOrders
         DirectOrder a -> a
         PlannedTask a -> [anyOrderPoint a]
       AnyOrderPlan a -> [a]
+
+-- | Returns nonempty elements if have some
+directOrderCommonElems
+  :: (Ord a)
+  => DirectOrder a
+  -> DirectOrder a
+  -> Maybe (Set a)
+directOrderCommonElems d1 d2 =
+  let r = S.intersection (S.fromList $ F.toList d1) (S.fromList $ F.toList d2)
+  in if S.null r then Nothing else Just r

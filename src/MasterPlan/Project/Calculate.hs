@@ -64,49 +64,53 @@ dirtyAlgebraPlan = \case
     return $ AnyOrderPlan $ anyOrder subplans
   Atom proj -> dirtyPlanProject proj
 
+type CleanState t a = State (Set (ProjectPlan t)) a
+
 -- | Remove tasks from subsequent plans which are already executed
-cleanPlanSequence :: ProjectPlan Task -> ProjectPlan Task
+cleanPlanSequence :: (Ord t) => ProjectPlan t -> ProjectPlan t
 cleanPlanSequence plan = evalState go S.empty
   where
     go = case plan of
-      DirectOrderPlan p -> DirectOrderPlan <$> goDirectOrder p
-      AnyOrderPlan p    -> AnyOrderPlan    <$> goAnyOrder p
-    goDirectOrder :: DirectOrder Task -> State (Set (ProjectPlan Task)) (DirectOrder Task)
-    goDirectOrder d = case d of
-      DirectOrder d -> do
-        maos <- for d $ \ao -> do
-          s <- get
-          let aop = AnyOrderPlan ao
-          case S.member aop s of
-            True -> return Nothing
-            False -> do
-              put $ S.insert aop s
-              res <- goAnyOrder ao
-              return $ Just res
-        let
-          res = case catMaybes maos of
-            [anyOrderSingular -> Just t] -> point t
-            x                            -> DirectOrder x
-        return res
-      a@(PlannedTask {}) -> return a
-      -- This case will be checked in 'goAnyOrder'
-    goAnyOrder :: AnyOrder Task -> State (Set (ProjectPlan Task)) (AnyOrder Task)
-    goAnyOrder (AnyOrder (S.toList -> directs)) = do
+      DirectOrderPlan p -> DirectOrderPlan <$> cleanDirectOrder p
+      AnyOrderPlan p    -> AnyOrderPlan    <$> cleanAnyOrder p
+
+cleanDirectOrder :: (Ord t) => DirectOrder t -> CleanState t (DirectOrder t)
+cleanDirectOrder d = case d of
+  DirectOrder d -> do
+    maos <- for d $ \ao -> do
       s <- get
-      let
-        aoProcessed = catMaybes $ flip fmap directs $ \dir ->
-          let p = DirectOrderPlan dir
-          in case S.member p s of
-            True  -> Nothing
-            False ->
-              let (resDir, resS) = runState (goDirectOrder dir) s
-              in Just (resDir, S.insert p resS)
-        finalS = S.unions $ snd <$> aoProcessed
-        res = case fst <$> aoProcessed of
-          [directOrderSingular -> Just t] -> anyOrderPoint t
-          x                               -> AnyOrder $ S.fromList x
-      put finalS
-      return res
+      let aop = AnyOrderPlan ao
+      case S.member aop s of
+        True -> return Nothing
+        False -> do
+          put $ S.insert aop s
+          res <- cleanAnyOrder ao
+          return $ Just res
+    let
+      res = case catMaybes maos of
+        [anyOrderSingular -> Just t] -> point t
+        x                            -> DirectOrder x
+    return res
+  a@(PlannedTask {}) -> return a
+  -- This case will be checked in 'cleanAnyOrder'
+
+cleanAnyOrder :: (Ord t) => AnyOrder t -> CleanState t (AnyOrder t)
+cleanAnyOrder (AnyOrder (S.toList -> directs)) = do
+  s <- get
+  let
+    aoProcessed = catMaybes $ flip fmap directs $ \dir ->
+      let p = DirectOrderPlan dir
+      in case S.member p s of
+        True  -> Nothing
+        False ->
+          let (resDir, resS) = runState (cleanDirectOrder dir) s
+          in Just (resDir, S.insert p resS)
+    finalS = S.unions $ snd <$> aoProcessed
+    res = case fst <$> aoProcessed of
+      [directOrderSingular -> Just t] -> anyOrderPoint t
+      x                               -> AnyOrder $ S.fromList x
+  put finalS
+  return res
 
 -- | Cleans subsequent connected component from tasks that already in
 -- first direct order plan.
@@ -119,8 +123,14 @@ cleanSequentialGraph
   -> [ConnectedComponent (DirectOrder a) (Set a)]
   -- ^ The result is potentially several connetcted components have no
   -- tasks from given one
-cleanSequentialGraph diror cc = (error "FIXME: ")
-
+cleanSequentialGraph diror cc =
+  let
+    restDirors = graphNodes $ unConnectedComponent cc
+    resGraph = flip evalState S.empty $ do
+      void $ cleanDirectOrder diror -- NOTE: just to prepare state
+      AnyOrder res <- cleanAnyOrder $ AnyOrder restDirors
+      return $ connectedComponents directOrderCommonElems $ S.toList res
+  in resGraph
 
 deintersectPlan :: (Ord a) => ProjectPlan a -> Variants (ProjectPlan a)
 deintersectPlan = \case
@@ -137,19 +147,9 @@ deintersectProduct
   => AnyOrder a
   -> Variants (AnyOrder a)
 deintersectProduct (AnyOrder (S.toList -> directs)) = do
-  let
-    ccs = connectedComponents haveCommonTasks directs
+  let ccs = connectedComponents directOrderCommonElems directs
   plans <- traverse planConnectedComponent ccs
   return $ anyOrder plans
-
-haveCommonTasks
-  :: (Ord a)
-  => DirectOrder a
-  -> DirectOrder a
-  -> Maybe (Set a)
-haveCommonTasks d1 d2 =
-  let r = S.intersection (S.fromList $ F.toList d1) (S.fromList $ F.toList d2)
-  in if S.null r then Nothing else Just r
 
 planConnectedComponent
   :: forall a. (Ord a)

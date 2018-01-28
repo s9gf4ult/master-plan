@@ -6,6 +6,7 @@ module MasterPlan.Project.Graph
   , Graph(unGraph)
   , emptyGraph
   , newGraph
+  , graphNodes
   , graphUnion
   , graphInsert
   , connectedComponents
@@ -31,6 +32,10 @@ newGraph f els = Graph $ M.fromListWith M.union $ do
   b <- bs
   e <- F.toList $ f a b
   return (a, M.singleton b e)
+
+graphNodes :: (Ord a) => Graph a e -> Set a
+graphNodes (Graph g) = S.union (M.keysSet g)
+  $ S.unions $ M.keysSet <$> M.elems g
 
 graphInsert
   :: (Ord a)
