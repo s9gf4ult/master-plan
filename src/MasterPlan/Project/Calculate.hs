@@ -1,8 +1,6 @@
 module MasterPlan.Project.Calculate where
 
 import Control.Monad.State.Strict
-import Data.Foldable as F
-import Data.Map.Strict as M
 import Data.Set as S
 import MasterPlan.Algebra
 import MasterPlan.Internal.Import
@@ -156,16 +154,10 @@ planConnectedComponent
   => ConnectedComponent (DirectOrder a) (Set a)
   -> Variants (ProjectPlan a)
 planConnectedComponent cc = do
-  let
-    conMap :: Map Int [DirectOrder a]
-    conMap = M.fromListWith (++)
-      $ fmap (snd &&& ((:[]) . fst))
-      $ M.toList
-      $ edgesCount cc
-    mostConnected = case M.toDescList conMap of
-      []         -> mempty
-      ((_, a):_) -> a
-  cuttedNode <- variants mostConnected
+  cuttedNode <- variants
+    $ S.toList
+    $ graphNodes
+    $ unConnectedComponent cc
   headPlan <- deintersectSequence cuttedNode
   let least = cleanSequentialGraph cuttedNode cc
   tailPlans <- traverse planConnectedComponent least
