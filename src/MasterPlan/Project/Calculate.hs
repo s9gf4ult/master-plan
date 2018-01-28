@@ -108,6 +108,20 @@ cleanPlanSequence plan = evalState go S.empty
       put finalS
       return res
 
+-- | Cleans subsequent connected component from tasks that already in
+-- first direct order plan.
+cleanSequentialGraph
+  :: (Ord a)
+  => DirectOrder a
+  -- ^ Plan to take tasks from
+  -> ConnectedComponent (DirectOrder a) (Set a)
+  -- ^ Components to clean in
+  -> [ConnectedComponent (DirectOrder a) (Set a)]
+  -- ^ The result is potentially several connetcted components have no
+  -- tasks from given one
+cleanSequentialGraph diror cc = (error "FIXME: ")
+
+
 deintersectPlan :: (Ord a) => ProjectPlan a -> Variants (ProjectPlan a)
 deintersectPlan = \case
   DirectOrderPlan direct -> DirectOrderPlan <$> deintersectSequence direct
@@ -131,13 +145,15 @@ deintersectProduct (AnyOrder (S.toList -> directs)) = do
 haveCommonTasks
   :: (Ord a)
   => DirectOrder a
-  -> DirectOrder a -> Bool
-haveCommonTasks d1 d2 = not $ S.null
-  $ S.intersection (S.fromList $ F.toList d1) (S.fromList $ F.toList d2)
+  -> DirectOrder a
+  -> Maybe (Set a)
+haveCommonTasks d1 d2 =
+  let r = S.intersection (S.fromList $ F.toList d1) (S.fromList $ F.toList d2)
+  in if S.null r then Nothing else Just r
 
 planConnectedComponent
   :: forall a. (Ord a)
-  => ConnectedComponent (DirectOrder a)
+  => ConnectedComponent (DirectOrder a) (Set a)
   -> Variants (ProjectPlan a)
 planConnectedComponent cc = do
   let
@@ -151,7 +167,7 @@ planConnectedComponent cc = do
       ((_, a):_) -> a
   cuttedNode <- variants mostConnected
   headPlan <- deintersectSequence cuttedNode
-  let least = removeNode cuttedNode cc
+  let least = cleanSequentialGraph cuttedNode cc
   tailPlans <- traverse planConnectedComponent least
   return $ DirectOrderPlan $ directOrder
     [ DirectOrderPlan headPlan

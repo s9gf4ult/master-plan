@@ -2,9 +2,8 @@ module MasterPlan.Project.GraphSpec where
 
 import Control.Applicative as A
 import Control.Monad
-import Data.Foldable
+import Data.Foldable as F
 import Data.List as L
-import Data.Map.Strict as M
 import Data.Monoid
 import Data.Set as S
 import MasterPlan.Project.Graph
@@ -14,42 +13,45 @@ import Test.Hspec.SmallCheck
 import Test.SmallCheck
 import Test.SmallCheck.Series
 
-ccFromTuples :: [(Int, Int)] -> [ConnectedComponent Int]
+ccFromTuples :: [(Int, Int)] -> [ConnectedComponent Int ()]
 ccFromTuples as =
   let
     h = S.fromList as
     els = S.toList $ S.fromList
       $ fmap fst as ++ fmap snd as
-    haveEdge a b = S.member (a, b) h || S.member (b, a) h
+    haveEdge a b = if S.member (a, b) h || S.member (b, a) h then Just () else Nothing
     ccs = connectedComponents haveEdge els
   in ccs
 
--- | Remove hanging nodes
-cleanGraph :: Graph Int -> Graph Int
-cleanGraph g =
-  let
-    toNodes = S.unions $ snd <$> M.toList g
-    res = M.filterWithKey nonEmpty g
-    nonEmpty k v = not $ S.member k toNodes && S.null v
-  in res
+-- -- | Remove hanging nodes
+-- cleanGraph :: Graph Int () -> Graph Int ()
+-- cleanGraph g =
+--   let
+--     toNodes = S.unions $ snd <$> M.toList g
+--     res = M.filterWithKey nonEmpty g
+--     nonEmpty k v = not $ S.member k toNodes && S.null v
+--   in res
 
 propDoubleSplit :: [GraphTuple] -> Either Reason Reason
-propDoubleSplit (fmap unGraphTuple -> as) = do
+propDoubleSplit tuples = do
   let
-    ccs = ccFromTuples as
-    subCcs :: [[Graph Int]]
+    ccs :: [ConnectedComponent Int ()]
+    ccs = ccFromTuples $ fmap unGraphTuple tuples
+    subCcs :: [[ConnectedComponent Int ()]]
     subCcs = (graphComponents . unConnectedComponent) <$> ccs
   for_ subCcs $ \cc -> case L.length cc of
     1 -> return ()
     _ -> Left $ show cc
   let
-    merged = M.unionsWith S.union $ concat subCcs
-    originalMerged = M.unionsWith S.union $ unConnectedComponent <$> ccs
+    merged = F.foldl' (graphUnion $ const id) emptyGraph
+      $ unConnectedComponent <$> concat subCcs
+    originalMerged = F.foldl' (graphUnion $ const id) emptyGraph
+      $ unConnectedComponent <$> ccs
   unless (merged == originalMerged)
     $ Left $ "merged: " <> show merged <> " but original was: " <> show originalMerged
   let
     splittedAgain = S.fromList $ graphComponents merged
-    originalSplitted = S.fromList $ unConnectedComponent <$> ccs
+    originalSplitted = S.fromList ccs
   unless (splittedAgain == originalSplitted)
     $ Left $ "splitted again: " <> show splittedAgain <> " but orignal: " <> show originalSplitted
   return "Ok"
@@ -87,7 +89,7 @@ spec = describe "Graph spec" $ do
         comps = ccFromTuples
           [ (1, 2), (2, 3), (3, 4), (4, 5) ]
         res = S.fromList
-          $ fmap (cleanGraph . unConnectedComponent)
+          $ fmap unConnectedComponent
           $ comps >>= removeNode 3
         expected = S.fromList
           $ fmap unConnectedComponent
