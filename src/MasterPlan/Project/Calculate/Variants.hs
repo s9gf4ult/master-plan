@@ -19,5 +19,5 @@ newtype Variants a = Variants
 variants :: [a] -> Variants a
 variants = Variants
 
-bestVariant :: Variants (Project Calculation) -> Project Calculation
+bestVariant :: Variants a -> a
 bestVariant = error "Not implemented: bestVariant"

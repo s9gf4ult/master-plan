@@ -9,20 +9,20 @@ import MasterPlan.Project.Plan
 
 newtype Cost = Cost
   { unCost :: Scientific
-  } deriving (Eq, Ord, Show, FromJSON)
+  } deriving (Eq, Ord, Show, Num, FromJSON)
 
 newtype Trust = Trust
   { unTrust :: Scientific
-  } deriving (Eq, Ord, Show, FromJSON)
+  } deriving (Eq, Ord, Show, Num, FromJSON)
 
 newtype Progress = Progress
   { unProgress :: Scientific
-  } deriving (Eq, Ord, Show, FromJSON)
+  } deriving (Eq, Ord, Show, Num, Fractional, FromJSON)
 
 -- | Steps count to execute plan
 newtype Steps = Steps
   { unSteps :: Int
-  } deriving (Eq, Ord)
+  } deriving (Eq, Ord, Num)
 
 -- | To distinguish same looking projects from each other
 data ProjectId = ProjectId

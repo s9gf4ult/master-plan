@@ -5,5 +5,5 @@ import MasterPlan.Project
 data RenderOptions = RenderOptions
   deriving (Eq, Ord)
 
-renderProject :: Project Calculation -> RenderOptions -> IO ()
+renderProject :: Project (Maybe Calculation) -> RenderOptions -> IO ()
 renderProject = error "Not implemented: renderProject"
