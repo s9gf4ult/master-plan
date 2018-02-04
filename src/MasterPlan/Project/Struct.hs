@@ -19,6 +19,11 @@ newtype Progress = Progress
   { unProgress :: Scientific
   } deriving (Eq, Ord, Show, FromJSON)
 
+-- | Steps count to execute plan
+newtype Steps = Steps
+  { unSteps :: Int
+  } deriving (Eq, Ord)
+
 -- | To distinguish same looking projects from each other
 data ProjectId = ProjectId
   { _projectIdModuleName  :: [Text]
@@ -55,6 +60,7 @@ data Estimation = Estimation
   { _estimationTrust    :: Trust
   , _estimationProgress :: Progress
   , _estimationCost     :: Cost
+  , _estimationSteps    :: Steps
   } deriving (Eq, Ord)
 
 data Project a

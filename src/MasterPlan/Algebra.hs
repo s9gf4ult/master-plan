@@ -8,7 +8,7 @@ data Algebra a
   | Product [Algebra a]
   | Sequence [Algebra a]
   | Atom a
-  deriving (Eq, Show, Ord, Generic, Foldable)
+  deriving (Eq, Show, Ord, Generic, Functor, Foldable)
 
 instance (NFData a) => NFData (Algebra a)
 

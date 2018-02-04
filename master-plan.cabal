@@ -93,6 +93,9 @@ library
                        , MasterPlan.Output.Diagrams
                        , MasterPlan.Project
                        , MasterPlan.Project.Calculate
+                       , MasterPlan.Project.Calculate.Estimation
+                       , MasterPlan.Project.Calculate.Plan
+                       , MasterPlan.Project.Calculate.Variants
                        , MasterPlan.Project.Graph
                        , MasterPlan.Project.Plan
                        , MasterPlan.Project.Struct

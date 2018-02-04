@@ -11,5 +11,5 @@ masterPlan opts = do
   modules <- loadYamlModules $ opts ^. oInputPath
   project <- do
     p <- interpretModules modules $ opts ^. oParsingOpts
-    return $ calculateProject p
+    return $ bestVariant $ calculateProject p
   renderProject project $ opts ^. oRenderOptions
