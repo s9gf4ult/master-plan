@@ -8,6 +8,14 @@ bugs wrongTrust * multipleYamlProjs ;
 
 multipleYamlProjs {
   description "There is multiple keys allowed in yaml parser. This behaviour must be restricted"
+} transitiveParser * moduleChecking ;
+
+transitiveParser {
+  description "Parse modules transitively, detect the root of the project by modules names"
+} ;
+
+moduleChecking {
+  description "Module names must match their pathes, roots of all modules must match, no recursive imports allowed"
 } ;
 
 wrongTrust {
@@ -17,6 +25,7 @@ wrongTrust {
 trustOfPlan {
   description "Calculate trust by calculating the trust of whole plan execution for each subproject"
   trust 80%
+  progress 100%
 } ;
 
 trustByAlgebra {
@@ -46,11 +55,13 @@ inhouseParser {
 datatypes {
   description "Separate algebra from projects. Get rid of 'Annotated' constructor (and lots of 'undefined'). And stuff"
   trust 75%
+  progress 100%
 };
 
 simplification {
   description "Improve simplification: simplify not just expressions but whole project. May be unusable."
   trust 45%
+  progress 100%
 };
 
 weightedSeq {
